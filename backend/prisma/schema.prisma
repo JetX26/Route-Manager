@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model member {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  firstName     String
+  lastName      String
+  clerkId       String     @unique
+  organizations String[]
+  routeBook     routeBook? @relation(fields: [routeBookId], references: [id])
+  routeBookId   String?    @db.ObjectId
+}
+
+model serviceEntry {
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  type            String
+  client          client  @relation(fields: [clientId], references: [id])
+  routeId         String? @db.ObjectId
+  time            String?
+  date            String
+  ph              Int?
+  chlorine        Int?
+  totalAlkalinity Int?
+  calcium         Int?
+  cya             Int?
+  salt            Int?
+  chemsAdded      String?
+  clientId        String  @db.ObjectId
+}
+
+model workOrder {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  route     client  @relation(fields: [clientId], references: [id])
+  routeId   String? @db.ObjectId
+  request   String
+  completed Boolean
+  clientId  String  @db.ObjectId
+}
+
+model client {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  routeNumber     Int
+  clientFirstName String
+  clientLastName  String
+  clientContact   String
+  gate            String?
+  key             String?
+  dog             String?
+  address         String
+  serviceHistory  serviceEntry[]
+  note            String?
+  workOrders      workOrder[]
+  route           route?         @relation(fields: [routeId], references: [id])
+  routeId         String?        @db.ObjectId
+}
+
+model route {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  clients     client[]
+  routeBook   routeBook? @relation(fields: [routeBookId], references: [id])
+  routeBookId String?    @db.ObjectId
+}
+
+model routeBook {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  routes route[]
+  member member[]
+}
+
+model organization {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  orgType  String
+  members  String[]
+  admins   String[]
+  owner    String
+  memberId String?  @db.ObjectId
+}
